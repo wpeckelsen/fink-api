@@ -1,0 +1,20 @@
+public enum CategoryType
+{
+    Beverages,
+    Bakery,
+    Dairy,
+    Produce,
+    Meat,
+    Fish,
+    Frozen,
+    Pantry,
+    Snacks,
+    Sweets,
+    Household,
+    PersonalCare,
+    Baby,
+    Pets,
+    Health,
+    International,
+    ReadyMeals
+}

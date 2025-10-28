@@ -9,9 +9,9 @@ public class Product
     public string Brand { get; set; } = string.Empty;
     public double Quantity { get; set; }
     public UnitType Unit { get; set; }
-    
+
     // might use categories later
-    // public string Category { get; set; } = string.Empty;
+    public CategoryType Category { get; set; } 
     public ICollection<Price> Prices { get; set; } = new List<Price>();
 
 }
