@@ -20,6 +20,9 @@ builder.Services.AddDbContext<FinkDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddScoped<PriceService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<StoreService>();
 
 var app = builder.Build();
 
