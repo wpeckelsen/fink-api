@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -15,36 +16,44 @@ public class ProductService
         _priceService = priceService;
     }
 
-    public async Task<ReadProductDto> CreateProductAsync(CreateProductDto dto)
+    public async Task<ReadProductDto> CreateProductAsync(CreateProductDto createProductDto)
     {
-        if (dto == null)
+        if (createProductDto == null)
         {
-            throw new ArgumentNullException(nameof(dto));
+            throw new ArgumentNullException(nameof(createProductDto));
         }
 
-        var exists = await _dbContext.Products.AnyAsync(p => p.Barcode == dto.Barcode);
+        if (createProductDto.InitialPrice == null)
+        {
+            throw new ArgumentException("Initial price is required.", nameof(createProductDto.InitialPrice));
+        }
+
+        var exists = await _dbContext.Products.AnyAsync(p => p.Barcode == createProductDto.Barcode);
         if (exists)
         {
-            throw new InvalidOperationException($"A product with barcode '{dto.Barcode}' already exists.");
+            throw new InvalidOperationException($"A product with barcode '{createProductDto.Barcode}' already exists.");
         }
 
         var product = new Product
         {
-            Barcode = dto.Barcode,
-            Name = dto.Name,
-            Brand = dto.Brand,
-            Quantity = dto.Quantity,
-            Unit = dto.Unit
+            Barcode = createProductDto.Barcode,
+            Name = createProductDto.Name,
+            Brand = createProductDto.Brand,
+            Quantity = createProductDto.Quantity,
+            Unit = createProductDto.Unit,
+            Category = createProductDto.Category
         };
 
-        if (product.Prices?.Count > 0)
+        var price = new Price
         {
-            foreach (var price in product.Prices)
-            {
-                price.Product = product;
-                _priceService.CalculatePricePerUnit(price);
-            }
-        }
+            Value = createProductDto.InitialPrice.Value,
+            Currency = createProductDto.InitialPrice.Currency,
+            StoreId = createProductDto.InitialPrice.StoreId,
+            Product = product
+        };
+
+        _priceService.CalculatePricePerUnit(price);
+        product.Prices.Add(price);
 
         await _dbContext.Products.AddAsync(product);
         await _dbContext.SaveChangesAsync();
@@ -66,6 +75,16 @@ public class ProductService
         return product == null ? null : MapToReadDto(product);
     }
 
+    public async Task<IEnumerable<QuickReadProductDto>> GetAllQuickReadProductsAsync()
+    {
+        var products = await _dbContext.Products
+            .Include(p => p.Prices)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return products.Select(MapToQuickReadDto).ToList();
+    }
+
     public async Task<ReadProductDto> UpdateProductAsync(EditProductDto dto)
     {
         if (dto == null)
@@ -82,23 +101,11 @@ public class ProductService
             throw new InvalidOperationException($"Product with id '{dto.Id}' was not found.");
         }
 
-        if (!string.Equals(product.Barcode, dto.Barcode, StringComparison.OrdinalIgnoreCase))
-        {
-            var barcodeExists = await _dbContext.Products
-                .AnyAsync(p => p.Barcode == dto.Barcode && p.Id != dto.Id);
-
-            if (barcodeExists)
-            {
-                throw new InvalidOperationException($"A product with barcode '{dto.Barcode}' already exists.");
-            }
-
-            product.Barcode = dto.Barcode;
-        }
-
         product.Name = dto.Name;
         product.Brand = dto.Brand;
         product.Quantity = dto.Quantity;
         product.Unit = dto.Unit;
+        product.Category = dto.Category;
 
         if (product.Prices?.Any() == true)
         {
@@ -107,6 +114,21 @@ public class ProductService
                 price.Product = product;
                 _priceService.CalculatePricePerUnit(price);
             }
+        }
+
+        if (dto.NewPrice != null)
+        {
+            var newPrice = new Price
+            {
+                Value = dto.NewPrice.Value,
+                Currency = dto.NewPrice.Currency,
+                StoreId = dto.NewPrice.StoreId,
+                Product = product
+            };
+
+            _priceService.CalculatePricePerUnit(newPrice);
+            product.Prices.Add(newPrice);
+            await _dbContext.Prices.AddAsync(newPrice);
         }
 
         await _dbContext.SaveChangesAsync();
@@ -131,31 +153,40 @@ public class ProductService
         await _dbContext.SaveChangesAsync();
     }
 
-    public ShortProductDto MapToShortDto(Product product)
+    public QuickReadProductDto MapToQuickReadDto(Product product)
     {
         if (product == null)
         {
             throw new ArgumentNullException(nameof(product));
         }
 
-        return new ShortProductDto
+        var latestPrice = product.Prices?
+            .OrderByDescending(p => p.CollectedAt)
+            .FirstOrDefault();
+
+        return new QuickReadProductDto
         {
-            Id = product.Id,
             Name = product.Name,
-            Barcode = product.Barcode
+            Brand = product.Brand,
+            PricePerUnit = latestPrice?.PricePerUnit
         };
     }
 
     private static ReadProductDto MapToReadDto(Product product)
     {
+        var latestPrice = product.Prices?
+            .OrderByDescending(p => p.CollectedAt)
+            .FirstOrDefault();
+
         return new ReadProductDto
         {
             Id = product.Id,
-            Barcode = product.Barcode,
             Name = product.Name,
             Brand = product.Brand,
             Quantity = product.Quantity,
-            Unit = product.Unit
+            Unit = product.Unit,
+            Category = product.Category,
+            PricePerUnit = latestPrice?.PricePerUnit
         };
     }
 }
