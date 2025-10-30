@@ -45,6 +45,8 @@ public class ReadProductDto
     public CategoryType Category { get; set; }
 
     public decimal? PricePerUnit { get; set; }
+
+    public decimal? LatestPrice { get; set; }
 }
 
 public class EditProductDto
@@ -77,10 +79,11 @@ public class EditProductDto
 
 public class QuickReadProductDto
 {
+    public int Id { get; set; }
+
     public string Name { get; set; } = string.Empty;
 
     public string Brand { get; set; } = string.Empty;
 
     public decimal? PricePerUnit { get; set; }
 }
-

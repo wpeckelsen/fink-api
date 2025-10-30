@@ -85,6 +85,31 @@ public class ProductService
         return products.Select(MapToQuickReadDto).ToList();
     }
 
+    public async Task<IReadOnlyList<QuickReadProductDto>> SearchProductsAsync(string term, int take = 20)
+    {
+        if (string.IsNullOrWhiteSpace(term))
+        {
+            throw new ArgumentException("Search term is required.", nameof(term));
+        }
+
+        if (take <= 0)
+        {
+            take = 20;
+        }
+
+        var pattern = $"%{term.Trim()}%";
+
+        var products = await _dbContext.Products
+            .Include(p => p.Prices)
+            .AsNoTracking()
+            .Where(p => EF.Functions.Like(p.Name, pattern))
+            .OrderBy(p => p.Name)
+            .Take(take)
+            .ToListAsync();
+
+        return products.Select(MapToQuickReadDto).ToList();
+    }
+
     public async Task<ReadProductDto> UpdateProductAsync(EditProductDto dto)
     {
         if (dto == null)
@@ -127,6 +152,7 @@ public class ProductService
             };
 
             _priceService.CalculatePricePerUnit(newPrice);
+            product.Prices ??= new List<Price>();
             product.Prices.Add(newPrice);
             await _dbContext.Prices.AddAsync(newPrice);
         }
@@ -166,6 +192,7 @@ public class ProductService
 
         return new QuickReadProductDto
         {
+            Id = product.Id,
             Name = product.Name,
             Brand = product.Brand,
             PricePerUnit = latestPrice?.PricePerUnit
@@ -186,7 +213,8 @@ public class ProductService
             Quantity = product.Quantity,
             Unit = product.Unit,
             Category = product.Category,
-            PricePerUnit = latestPrice?.PricePerUnit
+            PricePerUnit = latestPrice?.PricePerUnit,
+            LatestPrice = latestPrice?.Value
         };
     }
 }

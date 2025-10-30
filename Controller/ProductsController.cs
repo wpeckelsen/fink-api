@@ -37,6 +37,13 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<QuickReadProductDto>>> SearchProducts([FromQuery] string term, [FromQuery] int take = 20)
+    {
+        var products = await _productService.SearchProductsAsync(term, take);
+        return Ok(products);
+    }
+
     [HttpPost]
     public async Task<ActionResult<ReadProductDto>> CreateProduct([FromBody] CreateProductDto dto)
     {
