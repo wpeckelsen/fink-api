@@ -75,6 +75,7 @@ public class ProductService
         return product == null ? null : MapToReadDto(product);
     }
 
+// will be removed on production
     public async Task<IEnumerable<QuickReadProductDto>> GetAllQuickReadProductsAsync()
     {
         var products = await _dbContext.Products
