@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Service.External.OpenFoodFacts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<PriceService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<StoreService>();
+builder.Services.AddOpenFoodFacts(builder.Configuration);
 
 var app = builder.Build();
 
