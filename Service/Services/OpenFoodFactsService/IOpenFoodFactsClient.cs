@@ -1,12 +1,12 @@
 using System.Threading.Tasks;
+using Service.Dtos.OpenFoodFactsDtos;
 
-namespace Service.External.OpenFoodFacts;
+namespace Service.Services.OpenFoodFactsService;
 
 public interface IOpenFoodFactsClient
 {
-    Task<OpenFoodFactsProductResponse?> GetProductByBarcodeAsync(
+    Task<OpenFoodFactsDto?> GetProductByBarcodeAsync(
         string barcode,
         string? productType = null,
-        string? fields = null,
-        bool includeBlame = false);
+        string? fields = null);
 }

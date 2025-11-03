@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Service.External.OpenFoodFacts;
+namespace Service.Services.OpenFoodFactsService;
 
 public static class OpenFoodFactsServiceCollectionExtensions
 {

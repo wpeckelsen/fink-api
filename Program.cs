@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Service.External.OpenFoodFacts;
+using Service.Services.OpenFoodFactsService;
 
 var builder = WebApplication.CreateBuilder(args);
 

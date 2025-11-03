@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Service.External.OpenFoodFacts;
+using Service.Dtos.OpenFoodFactsDtos;
+using Service.Services.OpenFoodFactsService;
 
 namespace fink_api.Controllers;
 
@@ -16,15 +17,14 @@ public class OpenFoodFactsController : ControllerBase
     }
 
     [HttpGet("{barcode}")]
-    public async Task<ActionResult<OpenFoodFactsProductResponse>> GetProduct(
+    public async Task<ActionResult<OpenFoodFactsDto>> GetProduct(
         string barcode,
         [FromQuery] string? productType = null,
-        [FromQuery] string? fields = null,
-        [FromQuery] bool blame = false)
+        [FromQuery] string? fields = null)
     {
-        var result = await _client.GetProductByBarcodeAsync(barcode, productType, fields, blame);
+        var result = await _client.GetProductByBarcodeAsync(barcode, productType, fields);
 
-        if (result == null || result.Status == 0)
+        if (result == null)
         {
             return NotFound();
         }

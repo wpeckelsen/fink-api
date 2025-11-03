@@ -1,4 +1,4 @@
-namespace Service.External.OpenFoodFacts;
+namespace Service.Services.OpenFoodFactsService;
 
 public class OpenFoodFactsOptions
 {
