@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,25 @@ public class ProductsController : ControllerBase
         }
 
         return Ok(product);
+    }
+
+    [HttpGet("{barcode}/prefill")]
+    public async Task<ActionResult<ProductPrefillDto>> PrefillProductFromOpenFoodFacts(string barcode)
+    {
+        try
+        {
+            var prefill = await _productService.PrefillProductFromOpenFoodFactsAsync(barcode);
+            if (prefill == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(prefill);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     

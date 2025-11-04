@@ -4,16 +4,50 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Service.Dto;
+using Service.Services.OpenFoodFactsService;
 
 public class ProductService
 {
     private readonly FinkDbContext _dbContext;
     private readonly PriceService _priceService;
+    private readonly IOpenFoodFactsClient _openFoodFactsClient;
 
-    public ProductService(FinkDbContext dbContext, PriceService priceService)
+    public ProductService(FinkDbContext dbContext, PriceService priceService, IOpenFoodFactsClient openFoodFactsClient)
     {
         _dbContext = dbContext;
         _priceService = priceService;
+        _openFoodFactsClient = openFoodFactsClient ?? throw new ArgumentNullException(nameof(openFoodFactsClient));
+    }
+
+    public async Task<ProductPrefillDto?> PrefillProductFromOpenFoodFactsAsync(string barcode)
+    {
+        if (string.IsNullOrWhiteSpace(barcode))
+        {
+            throw new ArgumentException("Barcode is required.", nameof(barcode));
+        }
+
+        var exists = await _dbContext.Products.AnyAsync(p => p.Barcode == barcode);
+        if (exists)
+        {
+            throw new InvalidOperationException($"A product with barcode '{barcode}' already exists.");
+        }
+
+        var openFoodFactsProduct = await _openFoodFactsClient.GetProductByBarcodeAsync(barcode);
+        if (openFoodFactsProduct == null)
+        {
+            return null;
+        }
+
+        return new ProductPrefillDto
+        {
+            Barcode = string.IsNullOrWhiteSpace(openFoodFactsProduct.Barcode) ? barcode : openFoodFactsProduct.Barcode,
+            Name = string.IsNullOrWhiteSpace(openFoodFactsProduct.Name) ? null : openFoodFactsProduct.Name,
+            Brand = string.IsNullOrWhiteSpace(openFoodFactsProduct.Brand) ? null : openFoodFactsProduct.Brand,
+            Quantity = openFoodFactsProduct.Quantity,
+            Unit = openFoodFactsProduct.Unit,
+            Category = openFoodFactsProduct.Category,
+            InitialPrice = null
+        };
     }
 
     public async Task<ReadProductDto> CreateProductAsync(CreateProductDto createProductDto)
