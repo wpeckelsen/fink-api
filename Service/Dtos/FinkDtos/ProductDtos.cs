@@ -64,6 +64,8 @@ public class ReadProductDto
     public decimal? PricePerUnit { get; set; }
 
     public decimal? LatestPrice { get; set; }
+
+    public DateTime? PriceCollectedAt { get; set; }
 }
 
 public class EditProductDto

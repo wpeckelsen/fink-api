@@ -48,14 +48,6 @@ public class ProductsController : ControllerBase
         }
     }
 
-    
-    // will be removed for production. never will all +10k products be returned in one query.
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<QuickReadProductDto>>> GetProducts()
-    {
-        var products = await _productService.GetAllQuickReadProductsAsync();
-        return Ok(products);
-    }
 
     [HttpGet("search")]
     public async Task<ActionResult<IEnumerable<QuickReadProductDto>>> SearchProducts([FromQuery] string term, [FromQuery] int take = 20)

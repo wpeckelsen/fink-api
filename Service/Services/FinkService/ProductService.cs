@@ -249,7 +249,8 @@ public class ProductService
             Unit = product.Unit,
             Category = product.Category,
             PricePerUnit = latestPrice?.PricePerUnit,
-            LatestPrice = latestPrice?.Value
+            LatestPrice = latestPrice?.Value,
+            PriceCollectedAt = latestPrice?.CollectedAt
         };
     }
 }
