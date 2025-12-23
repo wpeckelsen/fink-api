@@ -50,13 +50,13 @@ In future versions, products will be clustered by store location so users can fi
 ## ⚙️ Tech Stack
 
 - **.NET 8.0** (Web API) 🧰  
-- **Azure SQL Database** 🗄️  
+- **SQLite** 🗄️  
 - **Azure Cloud Deployment** ☁️  
-- **Bicep / Terraform** (Infrastructure as Code) 🧱  
+- **Bicep** (Infrastructure as Code) 🧱  
 - **OpenFoodFacts API** (Product data source) 🌍  
 - **Vector embeddings / Azure AI Search** (for product similarity) 🧮  
 - **OAuth** (Authentication) 🔐  
-- **Codex / GitHub Copilot** (AI-assisted coding) 🤖  
+- **Codex** (AI-assisted coding) 🤖  
 
 ---
 

@@ -19,7 +19,6 @@ public class FinkDbContext : DbContext
 
             entity.Property(p => p.Barcode)
                 .IsRequired()
-                
                 .HasMaxLength(128);
 
             entity.Property(p => p.Name)
@@ -29,8 +28,11 @@ public class FinkDbContext : DbContext
             entity.Property(p => p.Brand)
                 .HasMaxLength(128);
 
+            // ===== CHANGED FOR SQLITE =====
+            // SQLite uses REAL for floating point numbers
             entity.Property(p => p.Quantity)
-                .HasColumnType("float");
+                .HasColumnType("REAL");  // Changed from "float"
+            // ==============================
 
             entity.Property(p => p.Unit)
                 .HasConversion<int>();
@@ -44,11 +46,13 @@ public class FinkDbContext : DbContext
             entity.Property(s => s.ChainName)
                 .HasConversion<int>();
 
+            // ===== CHANGED FOR SQLITE =====
             entity.Property(s => s.Latitude)
-                .HasColumnType("float");
+                .HasColumnType("REAL");  // Changed from "float"
 
             entity.Property(s => s.Longitude)
-                .HasColumnType("float");
+                .HasColumnType("REAL");  // Changed from "float"
+            // ==============================
         });
 
         modelBuilder.Entity<Price>(entity =>
@@ -56,17 +60,32 @@ public class FinkDbContext : DbContext
             entity.ToTable("Prices");
             entity.HasKey(p => p.Id);
 
+            // ===== CHANGED FOR SQLITE =====
+            // SQLite doesn't have decimal type - store as TEXT
             entity.Property(p => p.Value)
-                .HasColumnType("decimal(18,2)");
+                .HasConversion(
+                    v => v.ToString("0.00"),          // Convert decimal to string
+                    v => decimal.Parse(v))            // Convert string back to decimal
+                .HasColumnType("TEXT");                   // Changed from "decimal(18,2)"
 
             entity.Property(p => p.PricePerUnit)
-                .HasColumnType("decimal(18,4)");
+                .HasConversion(
+                    v => v.ToString("0.0000"),        // More precision for unit price
+                    v => decimal.Parse(v))
+                .HasColumnType("TEXT");                   // Changed from "decimal(18,4)"
+            // ==============================
 
             entity.Property(p => p.Currency)
                 .HasConversion<int>();
 
+            // ===== CHANGED FOR SQLITE =====
+            // SQLite stores dates as TEXT in ISO8601 format
             entity.Property(p => p.CollectedAt)
-                .HasColumnType("datetime2");
+                .HasConversion(
+                    v => v.ToString("yyyy-MM-dd HH:mm:ss"),  // Convert to string
+                    v => DateTime.Parse(v))                   // Convert back
+                .HasColumnType("TEXT");                           // Changed from "datetime2"
+            // ==============================
 
             entity.HasOne(p => p.Product)
                 .WithMany(p => p.Prices)

@@ -3,24 +3,23 @@ using Service.Services.OpenFoodFactsService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets<Program>();
-}
+// Always load user secrets
+builder.Configuration.AddUserSecrets<Program>();
 
-var connectionString = builder.Configuration.GetConnectionString("FinkSql");
+// Get connection string with SQLite fallback
+var connectionString = builder.Configuration.GetConnectionString("FinkSql") 
+    ?? "Data Source=fink.db";
 
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    throw new InvalidOperationException("Connection string 'FinkSql' not found. Configure it in user secrets or appsettings.");
-}
-
+// Register DbContext with SQLite
 builder.Services.AddDbContext<FinkDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlite(connectionString));
 
+// API Services
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
+
+//  Custom Services
 builder.Services.AddScoped<PriceService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<StoreService>();
@@ -28,17 +27,29 @@ builder.Services.AddOpenFoodFacts(builder.Configuration);
 
 var app = builder.Build();
 
-// if (app.Environment.IsDevelopment())
-// {
-
-// }
-
+// Development middleware
 app.UseSwagger();
 app.UseSwaggerUI();
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-await DatabaseSeeder.SeedAsync(app.Services);
+
+// Seed database in development
+if (app.Environment.IsDevelopment())
+{
+    try
+    {
+        Console.WriteLine("🌱 Seeding development database...");
+        await DatabaseSeeder.SeedAsync(app.Services);
+        Console.WriteLine("✅ Database seeded successfully!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Seeding failed: {ex.Message}");
+        
+    }
+}
 
 app.Run();

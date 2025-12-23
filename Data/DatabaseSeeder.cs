@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,19 +13,35 @@ public static class DatabaseSeeder
         var context = scope.ServiceProvider.GetRequiredService<FinkDbContext>();
         var priceService = scope.ServiceProvider.GetRequiredService<PriceService>();
 
-        await context.Database.MigrateAsync();
+        
+        await context.Database.EnsureCreatedAsync();
+        
 
         if (!await context.Stores.AnyAsync())
         {
             var stores = new List<Store>
             {
-                new Store { ChainName = ChainType.Rema1000, Latitude = 55.6761, Longitude = 12.5683 },
-                new Store { ChainName = ChainType.Netto, Latitude = 56.1629, Longitude = 10.2039 },
-                new Store { ChainName = ChainType.Føtex, Latitude = 57.0488, Longitude = 9.9217 }
+                new Store { 
+                    ChainName = ChainType.Rema1000, 
+                    Latitude = 55.6761, 
+                    Longitude = 12.5683 
+                },
+                new Store { 
+                    ChainName = ChainType.Netto, 
+                    Latitude = 56.1629, 
+                    Longitude = 10.2039 
+                },
+                new Store { 
+                    ChainName = ChainType.Føtex, 
+                    Latitude = 57.0488, 
+                    Longitude = 9.9217 
+                }
             };
 
             await context.Stores.AddRangeAsync(stores);
             await context.SaveChangesAsync();
+            
+            Console.WriteLine($"✅ Added {stores.Count} stores");
         }
 
         if (!await context.Products.AnyAsync())
@@ -40,7 +57,8 @@ public static class DatabaseSeeder
                     Brand = "Fink Farms",
                     Quantity = 1.0,
                     Unit = UnitType.Liter,
-                    Category = CategoryType.Dairy
+                    Category = CategoryType.Dairy,
+                    
                 },
                 new Product
                 {
@@ -49,7 +67,7 @@ public static class DatabaseSeeder
                     Brand = "Fink Roasters",
                     Quantity = 0.5,
                     Unit = UnitType.Kilogram,
-                    Category = CategoryType.Beverages
+                    Category = CategoryType.Beverages,
                 },
                 new Product
                 {
@@ -58,12 +76,15 @@ public static class DatabaseSeeder
                     Brand = "Fink Roasters",
                     Quantity = 0.5,
                     Unit = UnitType.Kilogram,
-                    Category = CategoryType.Beverages
+                    Category = CategoryType.Beverages,
+                 
                 }
             };
 
             await context.Products.AddRangeAsync(products);
             await context.SaveChangesAsync();
+            
+            Console.WriteLine($"✅ Added {products.Count} products");
 
             var prices = new List<Price>
             {
@@ -74,7 +95,11 @@ public static class DatabaseSeeder
 
             await context.Prices.AddRangeAsync(prices);
             await context.SaveChangesAsync();
+            
+            Console.WriteLine($"✅ Added {prices.Count} prices");
         }
+        
+        Console.WriteLine("🌱 Database seeding completed!");
     }
 
     private static Price CreatePrice(PriceService priceService, int storeId, decimal value, Product product)
@@ -84,7 +109,8 @@ public static class DatabaseSeeder
             Value = value,
             Currency = CurrencyType.DKK,
             StoreId = storeId,
-            Product = product
+            Product = product,
+            CollectedAt = DateTime.UtcNow  // Important: Set timestamp
         };
 
         priceService.CalculatePricePerUnit(price);
