@@ -1,66 +1,109 @@
-# 🐤 Fink API
+# Fink API
 
-**Fink API** is the backend for a grocery price-tracking app.  
-It powers the future mobile frontend (built in **Expo**) and provides product, price, and store data via REST endpoints.
+Fink API is a backend service that demonstrates a **product discovery and comparison feature** for modern consumer applications.
 
----
-
-## 🛒 Overview
-
-Fink lets users scan grocery barcodes to instantly view:
-
-- **Price per kilo/liter/unit** 💰  
-- **Similar products** and their prices across nearby stores 🧩  
-- **Price history** for any tracked item 📈  
-
-It’s designed for users who want to compare everyday grocery prices — for example, tracking different brands of coffee beans or monitoring how the same product’s price changes across supermarkets ☕️.
+Fink is positioned as a **modular feature prototype** that can be integrated into larger platforms (e.g. retail, health, or shopping apps).
 
 ---
 
-## 🔍 Product Scanning
+## 🧠 Core Idea
 
-When a user scans a barcode, the app:
+Fink showcases a simple but powerful pipeline:
 
-1. Sends the barcode (as a string) to **Fink API** 📦  
-2. Looks up the product in **Fink’s Azure SQL** database 🗂️  
-3. If not found, the API calls the **OpenFoodFacts API** to fetch product details 🌐  
-4. Saves the product in Fink’s database for faster future lookups 💾  
+1. Scan a product barcode  
+2. Fetch structured product data  
+3. Generate and compare vector embeddings  
+4. Return similar or alternative products  
 
----
-
-## 🧠 Related Products
-
-Fink uses **vector similarity search** to find related or duplicate products 🧮.  
-This allows results to be grouped by *closeness*:
-
-- **>0.9 similarity** → near-identical (e.g. same coffee, different packaging) 🔁  
-- **0.7–0.9 similarity** → comparable substitutes (e.g. same type of product, different brand) 🔄  
-
-This feature makes Fink more than a simple barcode scanner — it’s a lightweight **comparison engine** ☕️.
+This transforms a basic barcode scan into a **smart product comparison experience**.
 
 ---
 
-## 📍 Nearby Stores
+## 🔍 How It Works
 
-The API records basic user location data (longitude and latitude).  
-In future versions, products will be clustered by store location so users can filter results to specific supermarkets or regions 🏪.
+### 1. Barcode Input
+A barcode is sent to the API as a string.
+
+### 2. Product Lookup
+- The API first checks the local database  
+- If the product is not found, it fetches data from OpenFoodFacts  
+- The product is then stored for future requests  
+
+### 3. Similarity Search
+- The product is embedded into a vector space  
+- A similarity search is performed against existing products  
+- The API returns a list of related items  
+
+---
+
+## 🧩 Similar Product Matching
+
+Fink uses vector similarity to group products by relevance:
+
+- **> 0.9 similarity** → Near-identical  
+  _Example: same product, different packaging_
+
+- **0.7 – 0.9 similarity** → Comparable alternatives  
+  _Example: same category, different brand_
+
+This enables a **lightweight recommendation and comparison engine** on top of standard product data.
+
+---
+
+## 🛒 Use Case
+
+Fink is designed to support features like:
+
+- Smart product comparison  
+- Substitution suggestions  
+- Price-aware decision making (future)  
+- Enhanced barcode scanning experiences  
+
+---
+
+## 📦 API Responsibilities
+
+The API currently handles:
+
+- Barcode-based product retrieval  
+- External product data ingestion  
+- Persistent storage of product data  
+- Vector-based similarity search  
+
+---
+
+## 📍 Future Extensions
+
+Planned directions for the project include:
+
+- **Store-level clustering**  
+  Group products by physical retail locations  
+
+- **Price tracking**  
+  Track and compare price changes over time  
+
+- **Geographic filtering**  
+  Show relevant products based on user location  
+
+- **Frontend integration**  
+  Connect to a mobile or web client  
 
 ---
 
 ## ⚙️ Tech Stack
 
-- **.NET 8.0** (Web API) 🧰  
-- **SQLite** 🗄️  
-- **Azure Cloud Deployment** ☁️  
-- **Bicep** (Infrastructure as Code) 🧱  
-- **OpenFoodFacts API** (Product data source) 🌍  
-- **Vector embeddings / Azure AI Search** (for product similarity) 🧮  
-- **OAuth** (Authentication) 🔐  
-- **Codex** (AI-assisted coding) 🤖  
+- .NET 8 (Web API)  
+- SQLite  
+- Azure Cloud  
+- OpenFoodFacts API  
+- Azure AI Search / Vector Embeddings  
+- AI-assisted development through Github Copilot
 
 ---
 
-## 🚀 Future Goals
+## 🚀 Project Positioning
 
-- Introduce clustering for store locations 🗺️  
-- Integrate price tracking and visualization 📊 
+Fink is not intended to be a full product on its own.  
+Instead, it serves as a **proof of concept for intelligent product discovery**, demonstrating how:
+
+> A simple barcode scan can evolve into a contextual, recommendation-driven user experience.
